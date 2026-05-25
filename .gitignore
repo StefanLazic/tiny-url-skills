@@ -41,7 +41,6 @@ project.fragment.lock.json
 
 ## JetBrains Rider
 .idea/
-*.sln.iml
 
 ## VS Code
 .vscode/
