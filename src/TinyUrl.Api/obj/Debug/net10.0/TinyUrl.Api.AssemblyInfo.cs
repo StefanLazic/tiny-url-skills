@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TinyUrl.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+62d5a06da90bb8780afbc25fb3b829d80740ddae")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ab7635f23811f0d42cea4a2bb03ae87935cfddd2")]
 [assembly: System.Reflection.AssemblyProductAttribute("TinyUrl.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TinyUrl.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
