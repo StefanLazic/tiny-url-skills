@@ -6,6 +6,7 @@ public class SlugGenerator
 {
     private const string Base62Chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     private const int DefaultLength = 7;
+    private const int MaxCustomSlugLength = 15;
 
     public string Generate(string? customSlug = null)
     {
@@ -23,6 +24,11 @@ public class SlugGenerator
         if (string.IsNullOrWhiteSpace(slug))
         {
             throw new ArgumentException("Custom slug cannot be empty or whitespace.", nameof(slug));
+        }
+
+        if (slug.Length > MaxCustomSlugLength)
+        {
+            throw new ArgumentException($"Custom slug cannot exceed {MaxCustomSlugLength} characters.", nameof(slug));
         }
 
         if (!IsUrlSafe(slug))

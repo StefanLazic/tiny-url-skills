@@ -57,4 +57,22 @@ public class SlugGeneratorTests
 
         Assert.Throws<ArgumentException>(() => generator.Generate(customSlug));
     }
+
+    [Fact]
+    public void Generate_WithCustomSlugExceeding15Characters_ThrowsArgumentException()
+    {
+        var generator = new SlugGenerator();
+
+        Assert.Throws<ArgumentException>(() => generator.Generate("this-is-too-long"));
+    }
+
+    [Fact]
+    public void Generate_WithCustomSlugAtExactly15Characters_Succeeds()
+    {
+        var generator = new SlugGenerator();
+
+        var slug = generator.Generate("exactly15chars.");
+
+        Assert.Equal("exactly15chars.", slug);
+    }
 }
