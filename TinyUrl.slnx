@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TinyUrl.Core/TinyUrl.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TinyUrl.Core.Tests/TinyUrl.Core.Tests.csproj" />
+  </Folder>
+</Solution>
