@@ -8,7 +8,7 @@ using TinyUrl.Core;
 
 namespace TinyUrl.Api.Tests;
 
-public class ApiTests : IClassFixture<ApiTests.CustomWebApplicationFactory>, IDisposable
+public class ApiTests : IClassFixture<ApiTests.CustomWebApplicationFactory>
 {
     private readonly HttpClient _client;
     private readonly CustomWebApplicationFactory _factory;
@@ -20,10 +20,6 @@ public class ApiTests : IClassFixture<ApiTests.CustomWebApplicationFactory>, IDi
         {
             AllowAutoRedirect = false
         });
-    }
-
-    public void Dispose()
-    {
     }
 
     public class CustomWebApplicationFactory : WebApplicationFactory<Program>
