@@ -1,8 +1,10 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/TinyUrl.Api/TinyUrl.Api.csproj" />
     <Project Path="src/TinyUrl.Core/TinyUrl.Core.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/TinyUrl.Api.Tests/TinyUrl.Api.Tests.csproj" />
     <Project Path="tests/TinyUrl.Core.Tests/TinyUrl.Core.Tests.csproj" />
   </Folder>
 </Solution>
