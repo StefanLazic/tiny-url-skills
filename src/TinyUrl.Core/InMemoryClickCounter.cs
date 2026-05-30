@@ -19,8 +19,9 @@ public class InMemoryClickCounter : IClickCounter
     public Dictionary<string, int> DrainAll()
     {
         var drained = new Dictionary<string, int>();
+        var keys = _counts.Keys.ToArray();
 
-        foreach (var key in _counts.Keys)
+        foreach (var key in keys)
         {
             if (_counts.TryRemove(key, out var count))
             {
