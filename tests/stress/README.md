@@ -70,20 +70,41 @@ The k6 summary shows:
 
 The **sustainable ceiling** is the RPS at which all thresholds still pass. Look at the k6 output timeline or use `--out csv=results.csv` for detailed per-second data.
 
+## 1000 RPS Sustained Test (10 Minutes)
+
+A dedicated constant-rate test that holds 1000 RPS for 10 minutes with the same 1:10 create-to-redirect ratio.
+
+### Run the test with CSV output
+
+```bash
+k6 run --out csv=results.csv tests/stress/stress-test-1000rps.js
+```
+
+### Generate the report with graphs
+
+```bash
+pip install pandas matplotlib
+python tests/stress/generate-report.py results.csv
+```
+
+This produces:
+- `docs/stress-test-report-1000rps.md` — Full markdown report with summary tables
+- `tests/stress/output/requests_over_time.png` — Graph: Time (X) vs Requests Executed (Y)
+- `tests/stress/output/p95_latency_over_time.png` — Graph: p95 latency for create and redirect over time
+
+### Test configuration
+
+| Parameter | Value |
+|-----------|-------|
+| Total RPS | 1,000 (constant) |
+| Create RPS | ~91 (1/11 of total) |
+| Redirect RPS | ~909 (10/11 of total) |
+| Duration | 10 minutes |
+| Seed Slugs | 1,000 |
+
 ## Confirmation Run
 
-After finding the ceiling, confirm stability with a constant-rate run at ~80% of the discovered value. Create a separate script or modify `stress-test.js` to use the `constant-arrival-rate` executor at a fixed rate for 60 seconds:
-
-```javascript
-// Example: hold at 800 RPS total (80% of a 1000 RPS ceiling)
-// Adjust the scenario executors to constant-arrival-rate:
-//   executor: "constant-arrival-rate",
-//   rate: 73,   // create (~1/11 of 800)
-//   duration: "60s",
-// and for redirect:
-//   rate: 727,  // redirect (~10/11 of 800)
-//   duration: "60s",
-```
+After finding the ceiling with the ramp test, confirm stability with the 1000 RPS sustained test above, or modify it to target ~80% of the discovered ceiling value.
 
 ## Troubleshooting
 

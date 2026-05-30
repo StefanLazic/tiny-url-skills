@@ -96,11 +96,16 @@ SQLite (local development default). The seeded 1,000 rows plus rows created duri
 
 ```
 tests/stress/
-├── stress-test.js    ← k6 load test script
-└── README.md         ← installation, usage, and interpretation guide
+├── stress-test.js          ← k6 ramp load test (50 → 2,000 RPS over 3 min)
+├── stress-test-1000rps.js  ← k6 constant-rate test (1,000 RPS for 10 min)
+├── generate-report.py      ← Report + graph generator (reads k6 CSV output)
+├── output/                 ← Generated graphs (requests_over_time.png, p95_latency_over_time.png)
+└── README.md               ← Installation, usage, and interpretation guide
 ```
 
 ## How to Run
+
+### Ramp test (discover ceiling)
 
 1. Install k6: https://k6.io/docs/get-started/installation/
 2. Start the service:
@@ -115,6 +120,20 @@ tests/stress/
    ```bash
    BASE_URL=https://api.myservice.com k6 run tests/stress/stress-test.js
    ```
+
+### 1000 RPS sustained test (10 minutes)
+
+1. Start the service (same as above)
+2. Run the constant-rate test with CSV output:
+   ```bash
+   k6 run --out csv=results.csv tests/stress/stress-test-1000rps.js
+   ```
+3. Generate the report with graphs:
+   ```bash
+   pip install pandas matplotlib
+   python tests/stress/generate-report.py results.csv
+   ```
+4. View the generated report at `docs/stress-test-report-1000rps.md` and graphs in `tests/stress/output/`
 
 ## Interpreting Results
 
