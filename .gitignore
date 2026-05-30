@@ -55,5 +55,4 @@ project.fragment.lock.json
 Thumbs.db
 
 ## Stress test outputs
-tests/stress/output/
 *.csv

@@ -37,22 +37,25 @@ OUTPUT_DIR = os.path.join(SCRIPT_DIR, "output")
 
 def parse_k6_csv(csv_path):
     """Parse k6 CSV output into a DataFrame."""
-    df = pd.read_csv(csv_path)
-    df["timestamp"] = pd.to_datetime(df["timestamp"])
+    df = pd.read_csv(csv_path, low_memory=False)
+    df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s")
     return df
 
 
 def filter_http_duration(df):
-    """Filter for http_req_duration metric rows only."""
-    return df[df["metric_name"] == "http_req_duration"].copy()
+    """Filter for http_req_duration metric rows only, excluding setup phase."""
+    filtered = df[df["metric_name"] == "http_req_duration"].copy()
+    # Exclude setup phase rows
+    filtered = filtered[filtered["group"] != "::setup"]
+    return filtered
 
 
 def classify_scenario(row):
-    """Classify a row as 'create' or 'redirect' based on scenario tag."""
-    extra = str(row.get("extra_tags", ""))
-    if "create_scenario" in extra:
+    """Classify a row as 'create' or 'redirect' based on scenario column."""
+    scenario = str(row.get("scenario", ""))
+    if "create" in scenario:
         return "create"
-    elif "redirect_scenario" in extra:
+    elif "redirect" in scenario:
         return "redirect"
     return "unknown"
 
@@ -167,7 +170,8 @@ def plot_requests_over_time(total_counts, create_counts, redirect_counts, output
     ax.grid(True, alpha=0.3)
 
     # Format x-axis as MM:SS
-    tick_positions = ax.get_xticks()
+    tick_positions = np.linspace(total_counts["time_bin"].min(), total_counts["time_bin"].max(), 11)
+    ax.set_xticks(tick_positions)
     ax.set_xticklabels([format_time_label(t) for t in tick_positions])
 
     plt.tight_layout()
@@ -211,7 +215,9 @@ def plot_p95_latency(create_p95, redirect_p95, output_path):
     ax.grid(True, alpha=0.3)
 
     # Format x-axis as MM:SS
-    tick_positions = ax.get_xticks()
+    all_bins = pd.concat([create_p95["time_bin"], redirect_p95["time_bin"]])
+    tick_positions = np.linspace(all_bins.min(), all_bins.max(), 11)
+    ax.set_xticks(tick_positions)
     ax.set_xticklabels([format_time_label(t) for t in tick_positions])
 
     plt.tight_layout()
