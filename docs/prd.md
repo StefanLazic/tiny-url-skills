@@ -30,15 +30,19 @@ Build a URL shortening service as an ASP.NET Core API backed by EF Core (SQLite 
 
 ### Modules
 
-- **Slug Generator** — Encapsulates slug generation logic. Generates a random base62 string of a fixed length by default. Accepts a caller-supplied custom slug and validates that it is non-empty and URL-safe. Returns the final slug string. No external dependencies; trivially testable in isolation.
+- **Slug Generator** — Encapsulates slug generation logic. Generates a random base62 string of 7 characters by default using `RandomNumberGenerator` (cryptographically secure). Accepts a caller-supplied custom slug and validates that it is non-empty, at most 15 characters, and URL-safe (alphanumeric, hyphens, underscores, periods). Rejects invalid custom slugs with `ArgumentException`. Returns the final slug string. No external dependencies; trivially testable in isolation.
 
 - **URL Repository** — Abstracts all persistence operations for Short URL records. Backed by EF Core with a `DbContext` configured per environment (SQLite or PostgreSQL via the provider abstraction). Exposes: create a record, look up by slug, increment click count, and fetch stats by slug.
 
 - **Shorten URL Use Case** — Orchestrates creation of a new Short URL. Calls the Slug Generator (custom or random), writes the record via the URL Repository, and returns the full Short URL string. Validates the Original URL format before persisting.
 
-- **Redirect Use Case** — Looks up a slug via the URL Repository, checks the `expires_at` field against the current timestamp, increments `ClickCount` if not expired, and returns either the Original URL (for redirect) or a 410 Gone signal.
+- **Redirect Use Case** — Looks up a slug via the URL Repository, checks the `expires_at` field against the current timestamp (using `TimeProvider` for testability), increments the in-memory click counter if not expired, and returns either the Original URL (for redirect) or a 410 Gone signal.
 
-- **Stats Use Case** — Fetches `ClickCount` for a given slug via the URL Repository and returns it to the caller.
+- **Click Counter (`IClickCounter` / `InMemoryClickCounter`)** — Accumulates click counts in a thread-safe `ConcurrentDictionary` keyed by slug. Exposes: `Increment(slug)` for fast non-blocking counting, `GetUnflushedCount(slug)` for real-time stats, and `DrainAll()` to atomically retrieve and reset all pending counts. Registered as a singleton.
+
+- **Click Count Flusher (`ClickCountFlusher`)** — A `BackgroundService` that runs on a configurable interval (default: 10 seconds). Each tick calls `DrainAll()` on the click counter and batch-updates the database using `ExecuteUpdateAsync` (no entity tracking overhead). Ensures click data is eventually persisted without blocking redirect requests.
+
+- **Stats Use Case** — Fetches the persisted `ClickCount` from the URL Repository and adds the unflushed in-memory count from `IClickCounter`, returning the combined total to the caller.
 
 - **API Layer** — ASP.NET Core minimal API or controller endpoints that wire the three use cases to HTTP:
   - `POST /api/shorten` — calls Shorten URL Use Case
@@ -78,16 +82,21 @@ Build a URL shortening service as an ASP.NET Core API backed by EF Core (SQLite 
 - Migrations run automatically on startup in Development; in Production they are applied via a separate migration step (not on startup).
 - No deduplication: every POST always produces a new Slug, even for the same Original URL.
 - No PII collection: only the integer click counter is incremented on redirect.
+- **Write-behind click counting:** Redirect requests increment an in-memory `ConcurrentDictionary` (singleton) instead of hitting the database. A `BackgroundService` flushes accumulated counts to the database every 10 seconds using bulk `ExecuteUpdateAsync`, avoiding per-request write contention and improving redirect latency under load.
+- **Accurate real-time stats:** The Stats endpoint combines the persisted DB count with unflushed in-memory counts, so analytics remain accurate even between flush intervals.
+- **TimeProvider abstraction:** `RedirectUseCase` accepts a `TimeProvider` to allow deterministic testing of expiration logic without relying on real clock time.
 
 ## Testing Decisions
 
 - **What makes a good test:** Tests assert observable external behavior only — HTTP status codes, response body shapes, and side effects visible through the public API (e.g., changed click count). Tests must not assert on internal method calls, private fields, or EF Core internals.
 
 - **Modules to test:**
-  - **Slug Generator** — Unit tests: random output length and character set, custom slug pass-through, invalid slug rejection.
-  - **Shorten URL Use Case** — Integration tests with SQLite test DB: correct field values, base62 auto-slug, custom slug stored verbatim, `expires_at` persisted correctly.
-  - **Redirect Use Case** — Integration tests: redirect + counter increment, 410 for expired, 404 for unknown.
-  - **Stats Use Case** — Integration tests: correct click count returned.
+  - **Slug Generator** — Unit tests: random output length and character set, custom slug pass-through, invalid slug rejection (empty, too long, unsafe characters).
+  - **InMemoryClickCounter** — Unit tests: increment accumulates counts, `GetUnflushedCount` returns correct value, `DrainAll` returns and resets all counts.
+  - **ClickCountFlusher** — Integration tests with SQLite: verify that after flush, accumulated in-memory counts are persisted to the database.
+  - **Shorten URL Use Case** — Integration tests with SQLite test DB: correct field values, base62 auto-slug, custom slug stored verbatim, `expires_at` persisted correctly, duplicate custom slug rejected.
+  - **Redirect Use Case** — Integration tests: redirect + counter increment, 410 for expired, 404 for unknown. Uses `TimeProvider` for deterministic expiration testing.
+  - **Stats Use Case** — Integration tests: correct click count returned combining DB and unflushed in-memory counts.
   - **API Layer** — End-to-end tests via `WebApplicationFactory<Program>`: all three endpoints with valid/invalid inputs; assert status codes and response body shape.
 
 - **Prior art:** No existing tests. The first tests written will establish the pattern: xUnit with `WebApplicationFactory<Program>` for HTTP-level tests and plain xUnit for Slug Generator unit tests.
@@ -106,5 +115,6 @@ Build a URL shortening service as an ASP.NET Core API backed by EF Core (SQLite 
 ## Further Notes
 
 - Terminology must be consistent throughout the codebase: use **Original URL**, **Short URL**, and **Slug**. Avoid "long URL", "link", "tiny URL", and "redirect URL".
-- The base62 alphabet is `[0-9A-Za-z]`; slug length should be configurable but default to 7–8 characters for a reasonable collision budget.
+- The base62 alphabet is `[0-9A-Za-z]`; auto-generated slug length defaults to 7 characters. Custom slugs allow an extended character set (alphanumeric + `-`, `_`, `.`) up to 15 characters.
 - `expires_at` comparisons must use UTC timestamps throughout to avoid timezone ambiguity.
+- The `Slug` column in the database has a max length of 12 characters (for auto-generated slugs); custom slugs can be up to 15 characters in the application layer.

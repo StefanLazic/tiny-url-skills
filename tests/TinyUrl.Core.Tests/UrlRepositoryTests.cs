@@ -60,48 +60,6 @@ public class UrlRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task IncrementClickCountAsync_IncrementsCountByOne()
-    {
-        var shortUrl = new ShortUrl
-        {
-            Id = Guid.NewGuid(),
-            Slug = "click01",
-            OriginalUrl = "https://example.com",
-            ClickCount = 0,
-            CreatedAt = DateTime.UtcNow
-        };
-        await _repository.CreateAsync(shortUrl);
-
-        await _repository.IncrementClickCountAsync("click01");
-
-        var retrieved = await _repository.GetBySlugAsync("click01");
-        Assert.NotNull(retrieved);
-        Assert.Equal(1, retrieved.ClickCount);
-    }
-
-    [Fact]
-    public async Task IncrementClickCountAsync_CalledMultipleTimes_AccumulatesCount()
-    {
-        var shortUrl = new ShortUrl
-        {
-            Id = Guid.NewGuid(),
-            Slug = "click02",
-            OriginalUrl = "https://example.com",
-            ClickCount = 0,
-            CreatedAt = DateTime.UtcNow
-        };
-        await _repository.CreateAsync(shortUrl);
-
-        await _repository.IncrementClickCountAsync("click02");
-        await _repository.IncrementClickCountAsync("click02");
-        await _repository.IncrementClickCountAsync("click02");
-
-        var retrieved = await _repository.GetBySlugAsync("click02");
-        Assert.NotNull(retrieved);
-        Assert.Equal(3, retrieved.ClickCount);
-    }
-
-    [Fact]
     public async Task GetClickCountAsync_ReturnsClickCount()
     {
         var shortUrl = new ShortUrl

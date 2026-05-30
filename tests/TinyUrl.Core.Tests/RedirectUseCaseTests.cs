@@ -7,6 +7,7 @@ public class RedirectUseCaseTests : IDisposable
 {
     private readonly AppDbContext _context;
     private readonly UrlRepository _repository;
+    private readonly InMemoryClickCounter _clickCounter;
     private readonly RedirectUseCase _useCase;
 
     public RedirectUseCaseTests()
@@ -20,7 +21,8 @@ public class RedirectUseCaseTests : IDisposable
         _context.Database.EnsureCreated();
 
         _repository = new UrlRepository(_context);
-        _useCase = new RedirectUseCase(_repository);
+        _clickCounter = new InMemoryClickCounter();
+        _useCase = new RedirectUseCase(_repository, _clickCounter);
     }
 
     public void Dispose()
@@ -96,9 +98,12 @@ public class RedirectUseCaseTests : IDisposable
         await _useCase.RedirectAsync("click12");
         await _useCase.RedirectAsync("click12");
 
+        Assert.Equal(2, _clickCounter.GetUnflushedCount("click12"));
+
+        // DB should not have been updated (no flush yet)
         var stored = await _context.ShortUrls.FirstOrDefaultAsync(s => s.Slug == "click12");
         Assert.NotNull(stored);
-        Assert.Equal(2, stored.ClickCount);
+        Assert.Equal(0, stored.ClickCount);
     }
 
     [Fact]
