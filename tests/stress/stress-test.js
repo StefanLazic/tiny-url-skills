@@ -42,7 +42,7 @@ export function setup() {
 
   for (let i = 0; i < SEED_COUNT; i++) {
     const payload = JSON.stringify({
-      originalUrl: "https://example.com",
+      originalUrl: `https://example.com/seed/${i}`,
     });
 
     const res = http.post(`${BASE_URL}/api/shorten`, payload, {
@@ -53,6 +53,12 @@ export function setup() {
       const body = JSON.parse(res.body);
       slugs.push(body.slug);
     }
+  }
+
+  if (slugs.length < 900) {
+    throw new Error(
+      `Seeding failed: only ${slugs.length}/${SEED_COUNT} Slugs created. Aborting test.`
+    );
   }
 
   console.log(`Seeded ${slugs.length} Slugs`);

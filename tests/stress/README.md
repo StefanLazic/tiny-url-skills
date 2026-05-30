@@ -72,10 +72,17 @@ The **sustainable ceiling** is the RPS at which all thresholds still pass. Look 
 
 ## Confirmation Run
 
-After finding the ceiling, confirm stability with a constant-rate run at ~80% of the discovered value. Edit the script stages to hold a flat rate for 60 seconds, or run a quick test:
+After finding the ceiling, confirm stability with a constant-rate run at ~80% of the discovered value. Create a separate script or modify `stress-test.js` to use the `constant-arrival-rate` executor at a fixed rate for 60 seconds:
 
-```bash
-k6 run --duration 60s --rps <80_percent_of_ceiling> tests/stress/stress-test.js
+```javascript
+// Example: hold at 800 RPS total (80% of a 1000 RPS ceiling)
+// Adjust the scenario executors to constant-arrival-rate:
+//   executor: "constant-arrival-rate",
+//   rate: 73,   // create (~1/11 of 800)
+//   duration: "60s",
+// and for redirect:
+//   rate: 727,  // redirect (~10/11 of 800)
+//   duration: "60s",
 ```
 
 ## Troubleshooting
