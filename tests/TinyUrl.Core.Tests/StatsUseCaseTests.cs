@@ -7,6 +7,7 @@ public class StatsUseCaseTests : IDisposable
 {
     private readonly AppDbContext _context;
     private readonly UrlRepository _repository;
+    private readonly InMemoryClickCounter _clickCounter;
     private readonly StatsUseCase _useCase;
 
     public StatsUseCaseTests()
@@ -20,7 +21,8 @@ public class StatsUseCaseTests : IDisposable
         _context.Database.EnsureCreated();
 
         _repository = new UrlRepository(_context);
-        _useCase = new StatsUseCase(_repository);
+        _clickCounter = new InMemoryClickCounter();
+        _useCase = new StatsUseCase(_repository, _clickCounter);
     }
 
     public void Dispose()
@@ -55,5 +57,29 @@ public class StatsUseCaseTests : IDisposable
         var result = await _useCase.GetClickCountAsync("unknown1");
 
         Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetClickCountAsync_ReturnsDatabasePlusUnflushedCount()
+    {
+        var shortUrl = new ShortUrl
+        {
+            Id = Guid.NewGuid(),
+            Slug = "stats02",
+            OriginalUrl = "https://example.com/page",
+            ClickCount = 5,
+            ExpiresAt = null,
+            CreatedAt = DateTime.UtcNow
+        };
+        await _repository.CreateAsync(shortUrl);
+
+        _clickCounter.Increment("stats02");
+        _clickCounter.Increment("stats02");
+        _clickCounter.Increment("stats02");
+
+        var result = await _useCase.GetClickCountAsync("stats02");
+
+        Assert.NotNull(result);
+        Assert.Equal(8, result.Value);
     }
 }

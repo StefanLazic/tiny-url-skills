@@ -23,16 +23,6 @@ public class UrlRepository
         return await _context.ShortUrls.FirstOrDefaultAsync(s => s.Slug == slug);
     }
 
-    public async Task IncrementClickCountAsync(string slug)
-    {
-        var shortUrl = await _context.ShortUrls.FirstOrDefaultAsync(s => s.Slug == slug);
-        if (shortUrl is not null)
-        {
-            shortUrl.ClickCount++;
-            await _context.SaveChangesAsync();
-        }
-    }
-
     public async Task<int?> GetClickCountAsync(string slug)
     {
         var shortUrl = await _context.ShortUrls.FirstOrDefaultAsync(s => s.Slug == slug);

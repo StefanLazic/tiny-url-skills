@@ -6,11 +6,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")
         ?? "Data Source=tinyurl.db"));
+builder.Services.AddSingleton<IClickCounter, InMemoryClickCounter>();
 builder.Services.AddScoped<UrlRepository>();
 builder.Services.AddScoped<SlugGenerator>();
 builder.Services.AddScoped<ShortenUrlUseCase>();
 builder.Services.AddScoped<RedirectUseCase>();
 builder.Services.AddScoped<StatsUseCase>();
+builder.Services.AddHostedService<ClickCountFlusher>();
 
 var app = builder.Build();
 

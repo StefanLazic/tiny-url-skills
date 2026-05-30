@@ -29,11 +29,13 @@ public class RedirectResult
 public class RedirectUseCase
 {
     private readonly UrlRepository _repository;
+    private readonly IClickCounter _clickCounter;
     private readonly TimeProvider _timeProvider;
 
-    public RedirectUseCase(UrlRepository repository, TimeProvider? timeProvider = null)
+    public RedirectUseCase(UrlRepository repository, IClickCounter clickCounter, TimeProvider? timeProvider = null)
     {
         _repository = repository;
+        _clickCounter = clickCounter;
         _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
@@ -51,7 +53,7 @@ public class RedirectUseCase
             return RedirectResult.Gone();
         }
 
-        await _repository.IncrementClickCountAsync(slug);
+        _clickCounter.Increment(slug);
 
         return RedirectResult.Success(shortUrl.OriginalUrl);
     }
