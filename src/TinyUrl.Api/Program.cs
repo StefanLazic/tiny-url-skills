@@ -6,6 +6,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")
         ?? "Data Source=tinyurl.db"));
+builder.Services.Configure<CacheSettings>(builder.Configuration.GetSection("CacheSettings"));
+var cacheSettings = builder.Configuration.GetSection("CacheSettings").Get<CacheSettings>() ?? new CacheSettings();
+builder.Services.AddMemoryCache(options => options.SizeLimit = cacheSettings.SizeLimit);
 builder.Services.AddSingleton<IClickCounter, InMemoryClickCounter>();
 builder.Services.AddScoped<UrlRepository>();
 builder.Services.AddScoped<SlugGenerator>();

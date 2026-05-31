@@ -1,3 +1,6 @@
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
+
 namespace TinyUrl.Core;
 
 public enum RedirectStatus
@@ -31,20 +34,44 @@ public class RedirectUseCase
     private readonly UrlRepository _repository;
     private readonly IClickCounter _clickCounter;
     private readonly TimeProvider _timeProvider;
+    private readonly IMemoryCache _cache;
+    private readonly CacheSettings _cacheSettings;
 
-    public RedirectUseCase(UrlRepository repository, IClickCounter clickCounter, TimeProvider? timeProvider = null)
+    public RedirectUseCase(
+        UrlRepository repository,
+        IClickCounter clickCounter,
+        IMemoryCache cache,
+        IOptions<CacheSettings> cacheSettings,
+        TimeProvider? timeProvider = null)
     {
         _repository = repository;
         _clickCounter = clickCounter;
+        _cache = cache;
+        _cacheSettings = cacheSettings.Value;
         _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
     public async Task<RedirectResult> RedirectAsync(string slug)
     {
-        var shortUrl = await _repository.GetBySlugAsync(slug);
+        var cacheKey = $"slug:{slug}";
+
+        var shortUrl = await _cache.GetOrCreateAsync(cacheKey, async entry =>
+        {
+            var entity = await _repository.GetBySlugAsync(slug);
+            if (entity is null)
+            {
+                entry.Dispose();
+                return null;
+            }
+
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(_cacheSettings.TtlMinutes);
+            entry.Size = 1;
+            return entity;
+        });
 
         if (shortUrl is null)
         {
+            _cache.Remove(cacheKey);
             return RedirectResult.NotFound();
         }
 
