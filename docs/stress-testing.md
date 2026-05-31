@@ -96,11 +96,14 @@ SQLite (local development default). The seeded 1,000 rows plus rows created duri
 
 ```
 tests/stress/
-├── stress-test.js          ← k6 ramp load test (50 → 2,000 RPS over 3 min)
-├── stress-test-1000rps.js  ← k6 constant-rate test (1,000 RPS for 10 min)
-├── generate-report.py      ← Report + graph generator (reads k6 CSV output)
-├── output/                 ← Generated graphs (requests_over_time.png, p95_latency_over_time.png)
-└── README.md               ← Installation, usage, and interpretation guide
+├── stress-test.js              ← k6 ramp load test (50 → 2,000 RPS over 3 min)
+├── stress-test-1000rps.js      ← k6 constant-rate test (1,000 RPS for 10 min)
+├── stress-test-2500rps.js      ← k6 constant-rate test (2,500 RPS for 10 min)
+├── stress-test-5000rps.js      ← k6 constant-rate test (5,000 RPS for 10 min)
+├── generate-report.py          ← Report + graph generator for 1000 RPS (reads k6 CSV output)
+├── generate-report-2500rps.py  ← Report + graph generator for 2500 RPS (reads k6 CSV output)
+├── output/                     ← Generated graphs
+└── README.md                   ← Installation, usage, and interpretation guide
 ```
 
 ## How to Run
