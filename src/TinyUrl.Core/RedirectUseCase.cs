@@ -55,23 +55,23 @@ public class RedirectUseCase
     {
         var cacheKey = $"slug:{slug}";
 
-        var shortUrl = await _cache.GetOrCreateAsync(cacheKey, async entry =>
+        if (!_cache.TryGetValue(cacheKey, out ShortUrl? shortUrl))
         {
-            var entity = await _repository.GetBySlugAsync(slug);
-            if (entity is null)
-            {
-                entry.Dispose();
-                return null;
-            }
+            shortUrl = await _repository.GetBySlugAsync(slug);
 
-            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(_cacheSettings.TtlMinutes);
-            entry.Size = 1;
-            return entity;
-        });
+            if (shortUrl is not null)
+            {
+                var cacheEntryOptions = new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(_cacheSettings.TtlMinutes),
+                    Size = 1
+                };
+                _cache.Set(cacheKey, shortUrl, cacheEntryOptions);
+            }
+        }
 
         if (shortUrl is null)
         {
-            _cache.Remove(cacheKey);
             return RedirectResult.NotFound();
         }
 
