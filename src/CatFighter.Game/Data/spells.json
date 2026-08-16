@@ -1,0 +1,67 @@
+[
+  {
+    "name": "Scratch",
+    "manaCost": 0,
+    "target": "Enemy",
+    "element": "Normal",
+    "cooldown": 0,
+    "effects": [{ "type": "Damage", "value": 8 }]
+  },
+  {
+    "name": "Fireball",
+    "manaCost": 15,
+    "target": "Enemy",
+    "element": "Fire",
+    "cooldown": 1,
+    "effects": [{ "type": "Damage", "value": 25 }]
+  },
+  {
+    "name": "Ice Shard",
+    "manaCost": 10,
+    "target": "Enemy",
+    "element": "Ice",
+    "cooldown": 0,
+    "effects": [
+      { "type": "Damage", "value": 12 },
+      { "type": "SpeedDebuff", "value": 2, "duration": 2 }
+    ]
+  },
+  {
+    "name": "Heal",
+    "manaCost": 12,
+    "target": "Self",
+    "element": "Normal",
+    "cooldown": 2,
+    "effects": [{ "type": "Heal", "value": 20 }]
+  },
+  {
+    "name": "Shadow Strike",
+    "manaCost": 18,
+    "target": "Enemy",
+    "element": "Shadow",
+    "cooldown": 2,
+    "effects": [
+      { "type": "Damage", "value": 18 },
+      { "type": "Poison", "value": 5, "duration": 3 }
+    ]
+  },
+  {
+    "name": "Lightning Paw",
+    "manaCost": 14,
+    "target": "Enemy",
+    "element": "Lightning",
+    "cooldown": 1,
+    "effects": [
+      { "type": "Damage", "value": 15 },
+      { "type": "Stun", "value": 0, "duration": 1 }
+    ]
+  },
+  {
+    "name": "Shield Fur",
+    "manaCost": 8,
+    "target": "Self",
+    "element": "Normal",
+    "cooldown": 3,
+    "effects": [{ "type": "Shield", "value": 15 }]
+  }
+]
