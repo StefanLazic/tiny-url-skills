@@ -2,9 +2,12 @@
   <Folder Name="/src/">
     <Project Path="src/TinyUrl.Api/TinyUrl.Api.csproj" />
     <Project Path="src/TinyUrl.Core/TinyUrl.Core.csproj" />
+    <Project Path="src/CatFighter.Game/CatFighter.Game.csproj" />
+    <Project Path="src/CatFighter.Console/CatFighter.Console.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/TinyUrl.Api.Tests/TinyUrl.Api.Tests.csproj" />
     <Project Path="tests/TinyUrl.Core.Tests/TinyUrl.Core.Tests.csproj" />
+    <Project Path="tests/CatFighter.Game.Tests/CatFighter.Game.Tests.csproj" />
   </Folder>
 </Solution>
