@@ -19,6 +19,7 @@ public class CastSpellCommand : IBattleCommand
     }
 
     public string Description => $"Cast {_spell.Name} ({_spell.ManaCost} mana)";
+    public SpellDefinition Spell => _spell;
 
     public bool CanExecute(CatCharacter caster, CatCharacter target, Battle.BattleContext context)
     {
@@ -39,11 +40,11 @@ public class CastSpellCommand : IBattleCommand
         foreach (var effect in _spell.Effects)
         {
             var effectTarget = _spell.Target == TargetType.Self ? caster : target;
-            ApplyEffect(effect, caster, effectTarget, context);
+            ApplyEffect(effect, effectTarget, context);
         }
     }
 
-    private static void ApplyEffect(EffectDefinition effect, CatCharacter caster, CatCharacter target, Battle.BattleContext context)
+    private static void ApplyEffect(EffectDefinition effect, CatCharacter target, Battle.BattleContext context)
     {
         switch (effect.Type)
         {

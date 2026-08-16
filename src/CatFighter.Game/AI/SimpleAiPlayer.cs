@@ -26,7 +26,7 @@ public class SimpleAiPlayer
         // Simple heuristic: prefer heals when low HP, prefer damage when enemy is low
         var scored = available.Select(cmd =>
         {
-            var spell = self.Spells.First(s => cmd.Description.Contains(s.Name));
+            var spell = cmd.Spell;
             double score = _rng.NextDouble() * 2;
 
             if (self.Hp < self.MaxHp * 0.3 && spell.Effects.Any(e => e.Type == EffectType.Heal))
